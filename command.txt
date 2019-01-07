@@ -1,0 +1,236 @@
+
+cat /root/.ssh/id_rsa.pub | ssh 10.102.0.57 'cat >> .ssh/authorized_keys'
+**********************************************************************************************
+too open file  in linux:
+vim /etc/security/limits.conf
+* hard nofile 65000
+* soft nofile 65000
+* hard nproc 65000
+* soft nproc 65000
+ulimit -n
+show process id limit: 
+cat /proc/14479/limits
+
+**********************************************************************************************
+turn off firewall linux
+
+service iptables stop
+vim /etc/selinux/config
+**********************************************************************************************
+
+change hostname linux
+vim /etc/hosts
+and 
+	sysctl kernel.hostname=NEW_HOSTNAME
+		and
+	vim /etc/sysconfig/network
+		HOSTNAME="plain.domainname.com"
+**********************************************************************************************
+REMOVE WEBLOGIC LOG
+
+rm -rf /appserver/weblogic10.3.6/Oracle_WT1/instances/instance1/diagnostics/logs/OHS/ohs1/ohs1-*
+rm -rf /appserver/weblogic10.3.6/user_projects/domains/base_domain/servers/msINT*/logs/*
+rm -rf /appserver/weblogic10.3.6/user_projects/domains/base_domain/servers/cms*/logs/*
+rm -rf /appserver/weblogic10.3.6/Oracle_WT1/instances/instance1/diagnostics/logs/OHS/ohs1/access_log?*
+rm -rf /appserver/weblogic10.3.6/user_projects/domains/base_domain/servers/ms*/logs/*
+**********************************************************************************************
+
+REPLACE IN LINUX
+
+grep -Rw "10.110.0.76" /appserver/wls/*  |awk -F ':' '{print $1}' |sort |uniq |xargs sed -i 's/10.110.0.76/10.110.1.76/g'
+
+**********************************************************************************************
+total usage memory by java per giga byte
+
+	ps aux | grep java | awk '{sum=sum+$6}; END {print sum/1024/1024 " GB"}'
+**********************************************************************************************
+
+du -hcx --max-depth=1
+
+/var log is 100% 
+view inode : 
+
+df -i 
+**********************************************************************************************
+
+top -ca
+or 
+top -c and you can press Shift+M to sort by percentage of memory consumed
+or
+top
+and type c
+
+order by memory or cpu
+shift + >  or shift + <
+
+**********************************************************************************************		
+change ip:
+vim /etc/sysconfig/network-scripts/ifcfg-eth0
+vim /etc/sysconfig/network
+
+
+**********************************************************************************************
+
+view state of tcp socket 
+ss -tano
+netstat -tanp
+lsof -i
+**********************************************************************************************
+format disk 
+fdisk /dev/sda and m
+**********************************************************************************************
+du -sh
+du -h --max-depth=0
+**********************************************************************************************
+vim command
+- search toward : /
+- search backwar : ?
+- next search occured : n
+- previous search occured : shift + n
+- go 100 line forward : 10j
+- go 100 line back : 10k
+- got next word in line = w or W
+- got back word i line = b or B
+- delete n word in line toward = d + n + w
+- delete n word in line backward = d + n + b
+- select multi line in multi page in vim = 
+	first type v to visual mode
+	for copy select line type y
+	and for paste selected line type p
+	
+**********************************************************************************************
+vnc server start :  vncserver
+change vnc password : vncpasswd
+**********************************************************************************************
+for ip in $(cat /appserver/crontabjobs/serverip/allip ) ; { ssh $ip du -s /appserver/archive/; } |awk '{ SUM += $1 } END { print SUM/1024/1024 }'
+**********************************************************************************************
+split file with date:
+sed -n '/2017-12-30 09:00:00/ , /2017-12-30 10:00:00/p' appserver/temp-catalina/2017-12-30__14h-01m-47s-cron-catalina.out >> ./logCurrent.txt
+**********************************************************************************************
+dmidecode -t system
+
+**********************************************************************************************
+ssh no password : 
+ssh-keygen -t rsa
+ssh sheena@192.168.0.11 mkdir -p /root/.ssh
+cat /root/.ssh/id_rsa.pub | ssh sheena@192.168.0.11 'cat >> /root/.ssh/authorized_keys'
+
+**********************************************************************************************
+add existing user to existing group:
+sudo usermod -a -G groupName userName
+**********************************************************************************************
+close network access:
+	in this file:
+		/etc/sysconfig/network-scripts/route-eth0
+	add this line for destination ip
+		unreach 10.15.8.121 scope host
+	and restart
+	and run this command:
+		route add -host $ip reject
+**********************************************************************************************
+ for ip in $( cat /appserver/crontabjobs/serverip/allip); do ssh $ip 'for file in $( find /var/log/messages* ); do cat $file |grep responding; done' >> /appserver/resultcommand; done
+
+**********************************************************************************************
+get ip address
+ifconfig | awk '/inet addr/{print substr($2,6)}'|head -1
+**********************************************************************************************
+search recursive in folder:
+grep -nr 10.102.0.40 /appserver/Applications_DONT_REMOVE/FCB
+**********************************************************************************************
+add dns server and resolve slowely ssh connection to server :
+
+vim /etc/resolv.conf
+nameserver 10.15.0.101
+
+vim /etc/ssh/sshd_config
+UseDNS no
+ 
+from server that set sshd_config must set this property in follow file:
+vim /etc/ssh/ssh_config
+     GSSAPIAuthentication no
+
+service sshd restart
+**********************************************************************************************
+groupmod -g <NEW_GID> <groupname>
+usermod -a -G group1,group2 username
+**********************************************************************************************
+grep -w 'alias' .bashrc | while read -r line; do echo $line; done
+**********************************************************************************************
+ssh key-gen without passphrase : 
+ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""
+**********************************************************************************************	
+egrep  '(500|600|400)' /etc/group | awk '{split($0,a,":");print a[1]}'
+**********************************************************************************************
+telnet exit:
+ctrl + ]
+**********************************************************************************************
+  for ip in $( cat /appserver/crontabjobs/serverip/allip ) ; { echo -------$ip--------- ;ssh $ip  'exec 3<> /dev/tcp/10.110.4.166/1433' ;}
+  **********************************************************************************************
+dos2unix substitution:
+  sed -i -e 's/\r$//' /appserver/generateSSLforNginx
+**********************************************************************************************  
+ swap clear on server : 
+  vmstat 1
+  swapoff -a
+**********************************************************************************************    
+  sum connection per ip that connect to server:
+  netstat -ntu |grep -v 1521| awk ' $5 ~ /^(::ffff:|[0-9|])/ { gsub("::ffff:","",$5); print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr |awk '{ sum+=$1} END { print sum}'
+  
+  
+  netstat -ntu |grep -v 127.0.0.1|grep -v 1521| awk ' $5 ~ /^(::ffff:|[0-9|])/ { gsub("::ffff:","",$5); print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr
+**********************************************************************************************
+vim ~/.vimrc
+syntax on
+
+colorscheme desert
+
+or in vim type = 
+	:colo blue
+**********************************************************************************************  
+  grep --color xxxx
+**********************************************************************************************    
+sed find string and replace with self and one group:
+  sed 's/password="\([[:alnum:]]*\)"/*****(&)***** password fetch=\1 /g' /appserver/amanitest
+  
+**********************************************************************************************
+average response time in log per hour:  
+  cat  /appserver/apache-tomcat-8.0.32/logs/catalina.out |grep _time| egrep .*12:[[:digit:]]{2}:[[:digit:]]{2}.* | awk '{ gsub(/\(/,"",$17);print $17}'| awk '{ sum += $0;n++ } END { print sum /n; }'
+ **********************************************************************************************
+response time bigger than 10000: 
+  cat  /appserver/temp-catalina/2018-11-12__14h-30m-02s-cron-catalina.out |grep _time | awk '{ gsub(/\(/,"",$17) ;print $17}'|awk '{if($0>10000) {print $0}}'
+  cat base_domain.log00004 |grep _time | awk '{ gsub(/\(/,"",$17) ;print substr($18,2)}'|awk '{if($0>9000) {print $0}}'
+  
+  
+**********************************************************************************************
+TCP COMMAND:
+netstat -nat | awk '{print $6}' | sort | uniq -c | sort -n 
+netstat -on | grep TIME_WAIT
+
+# Decrease TIME_WAIT seconds
+net.ipv4.tcp_fin_timeout = 30
+
+# Recycle and Reuse TIME_WAIT sockets faster
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_reuse = 1
+  
+change time_wait time_wait
+vim /etc/sysctl.conf
+net.ipv4.ip_local_port_range = 10000 65000
+net.ipv4.tcp_fin_timeout=10
+OR 
+echo 15000 65000 > /proc/sys/net/ipv4/ip_local_port_range
+**********************************************************************************************
+myuser ALL=(ALL) NOPASSWD:ALL for a single user, or
+
+%sudo  ALL=(ALL) NOPASSWD:ALL for a group.
+ **********************************************************************************************
+ 
+-for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ; ssh $ip 'echo -e "m.lak@1234"|(passwd --stdin m.lak)'; }
+-for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ;  ssh $ip "sed -i 's/root\/.bash_profile/etc\/profile/g' /etc/init.d/tomcat" ; }
+-for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ;  ssh $ip "sed -i 's/%deployment ALL=\/bin\/bash -c service /%deployment ALL=\/sbin\/service /g' /etc/sudoers"; }
+-for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ;  ssh $ip chmod 775 /etc/init.d/tomcat; }
+-for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ;ssh $ip "sed -i 's/\HOME\/bin/HOME\/bin:\/sbin\/service/g' /home/m.lak/.bash_profile";}
+ 
+ 
+ 
+ 

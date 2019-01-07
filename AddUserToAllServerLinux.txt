@@ -1,0 +1,63 @@
+#/bin/bash
+source  /root/.bash_profile
+
+USERS=(amani amontazeri bvahidnia asharifi amin razzagh basreie)
+#iplist="cat /appserver/crontabjobs/serverip/allip"
+
+
+echo  "do you want to preconfigure clients ? (press y to continue)"
+read _SECURITY;
+if [ "$_SECURITY" ==  "y" ];
+  then
+		printf '%s\n users list is = ' "${USERS[@]}"
+		printf '%s\n servers list is = ' "${iplist[@]}"
+		echo  "do you want to preconfigure clients ? (press y to continue and n to exit)"
+		read _SECURITY;
+		if [ "$_SECURITY" ==  "n" ];
+			then
+				exit 130;
+				
+        for ((i = 0; i < ${#USERS[@]}; i++))
+          do
+				useradd ${USERS[$i]}
+				echo "$i = added user = ${USERS[$i]} to this server(main)"
+				echo -e "123"|(passwd --stdin ${USERS[$i]})
+				usermod -a -g 600 -G 500 ${USERS[$i]}
+                'mkdir -p /home/${USERS[$i]}/.ssh/'
+                su - ${USERS[$i]}
+				echo "Generate ssh-keygen in this server for this user = ${USERS[$i]}"
+                ssh-keygen -b 2048 -t rsa -f /tmp/sshkey -q -N ""
+				exit
+          done
+    for ip in $iplist
+     do
+        echo -----------------$ip ---------- ;
+
+        ssh $ip 'groupadd -g 400 logviewer'
+        ssh $ip 'groupadd -g 600 deployment'
+        ssh $ip 'groupadd -g 500 operation'
+        ssh $ip groupmod -g 330 rasad
+        ssh $ip usermod  -g 330 rasad
+
+        for ((i = 0; i < ${#USERS[@]}; i++))
+          do
+                ssh $ip useradd ${USERS[$i]}
+                echo "$i = added user = ${USERS[$i]}"
+                ssh $ip 'echo -e "123"|(passwd --stdin ${USERS[$i]})'
+                ssh $ip usermod -a -g 600 -G 500 ${USERS[$i]}
+                ssh $ip 'mkdir -p /home/${USERS[$i]}/.ssh/'
+                scp -r /home/${USERS[$i]}/.ssh/authorized_keys $ip:/home/${USERS[$i]}/.ssh/
+                cat /home/${USERS[$i]}/.ssh/id_rsa.pub | ssh $ip 'cat >> /home/${USERS[$i]}/.ssh/authorized_keys'
+                ssh $ip 'grep -w "alias" .bashrc | while read -r line; do echo $line >> /home/${USERS[$i]}/.bashrc; done'
+
+          done
+        ssh $ip 'echo "%deployment ALL=/bin/bash -c service tomcat *,/bin/bash -c killall -9 java" >> /etc/sudoers'
+        ssh $ip 'echo "%operation  ALL=(ALL)       ALL" >> /etc/sudoers'
+        ssh $ip chmod -R 775 /appserver
+        ssh $ip chgrp -R deployment /appserver
+        ssh $ip chgrp -R operation /appserver/apache-tomcat-8.0.32
+        ssh $ip chgrp -R operation /appserver/jdk1.8.0_66
+        ssh $ip chgrp chgrp -R operation /appserver/crontab
+		ssh $ip chgrp chgrp -R operation /appserver/temp-catalina
+        ssh $ip chgrp chgrp -R operation /appserver/archive
+     done

@@ -1,0 +1,10 @@
+#!/bin/bash
+	postfix=81
+	for ip in $( cat /appserver/crontabjobs/serverip/testserversip)
+	do
+		echo $ip
+		ssh $ip "sysctl kernel.hostname='rfhtest$postfix'" 
+		ssh $ip 'sysctl -p'
+		postfix=$(($postfix + 1))
+		echo $postfix
+	done

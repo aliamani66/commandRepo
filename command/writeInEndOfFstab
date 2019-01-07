@@ -1,0 +1,2 @@
+for ip in $( cat /appserver/crontabjobs/serverip/testserversip); do ssh $ip "echo '10.15.8.81:/appserver/APP_DONT_REMOVE/FCBSchedule /appserver/APP_DONT_REMOVE/FCBSchedule nfs    rsize=8192,wsize=8192,timeo=14,intr' >> /etc/fstab"; done
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+	postfix=81
+	for ip in $( cat /appserver/crontabjobs/serverip/testserversip)
+	do
+		echo "-------------------ip = $ip----------"
+		for cmd in $( cat /appserver/command/closeAccessIps)
+		do
+			echo "-----------------command is =$cmd"
+			ssh $ip "route add -host $cmd reject"
+		done
+	done

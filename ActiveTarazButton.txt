@@ -1,0 +1,3 @@
+select * from t_prolog
+
+delete FROM t_prolog plog where plog.c_startdate < '27-APR-18 12:00:00.0000 AM'

@@ -1,0 +1,55 @@
+[root@fcbappt81 ~]# vim /appserver/installHost
+#!/bin/bash
+
+echo "install server bash script is start now"
+
+
+echo "* hard nofile 65000" >> /etc/security/limits.conf
+echo "* soft nofile 65000" >> /etc/security/limits.conf
+echo "* hard nproc 65000" >> /etc/security/limits.conf
+echo "* soft nproc 65000" >> /etc/security/limits.conf
+
+echo "run ulimit -n command"
+
+ulimit -n
+echo "turn off firewall linux "
+turn off firewall linux
+echo "service ipatables stop"
+service iptables stop
+chkconfig nfs on
+chkconfig ntpd on
+
+echo "please enter hostname from this server"
+read hostname
+echo "your enterd host name is $hostname"
+echo $(ifconfig | awk '/inet addr/{print substr($2,6)}'|head -1) $hostname >> /etc/hosts
+sysctl kernel.hostname=$hostname
+sed -i "/HOSTNAME/c\HOSTNAME=$hostname" /etc/sysconfig/network
+echo -e "net.ipv4.ip_local_port_range = 10000 65000 \n net.ipv4.tcp_fin_timeout=10" >> /etc/sysctl.con
+echo "15000 65000" >>/proc/sys/net/ipv4/ip_local_port_range
+
+mkdir /appserver/satna
+mkdir /appserver/Applications_DONT_REMOVEexi
+mkdir -p /appserver/Applications_DONT_REMOVE/FCB
+mkdir -p /appserver/Applications_DONT_REMOVE/FCBSchedule
+mkdir /appserver/receivedInquiries
+mkdir /appserver/archive
+mkdir /appserver/loginInfo
+
+
+echo "10.102.0.149:/nfs/appserver/Applications_DONT_REMOVE/FCB /appserver/Applications_DONT_REMOVE/FCB nfs     ro,rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+echo "10.102.0.149:/nfs/appserver/Applications_DONT_REMOVE/FCBSchedule /appserver/Applications_DONT_REMOVE/FCBSchedule nfs     ro,rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+echo "10.102.0.149:/nfs/appserver/loginInfo /appserver/loginInfo  nfs     rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+echo "10.102.0.149:/nfs/appserver/receivedInquiries /appserver/receivedInquiries nfs     rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+echo "10.102.0.149:/nfs/appserver/satna /appserver/satna nfs     rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+
+echo "10.102.0.153    coredb-vip1" >> /etc/hosts
+echo "10.102.0.154    coredb-vip2" >> /etc/hosts
+echo "192.168.65.118  estelam.nibn.net" >> /etc/hosts
+echo "192.168.65.54 sayad.nibn.net" >> /etc/hosts
+echo "172.31.248.9 portal.pbn.net" >> /etc/hosts
+
+
+rm -rf /appserver/apache-tomcat-8.0.32/logs/catalina.*
+rm -rf /appserver/apache-tomcat-8.0.32/logs/localhost*
+rm -rf /appserver/apache-tomcat-8.0.32/logs/manager.*

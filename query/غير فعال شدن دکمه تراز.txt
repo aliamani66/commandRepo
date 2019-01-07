@@ -1,0 +1,15 @@
+SELECT MIN (s_date)
+FROM
+  (SELECT MAX (PLOG.C_STARTDATE) s_date,
+    PLOG.C_BRANCHID
+  FROM t_prolog plog
+  WHERE PLOG.C_BRANCHID IN
+    (SELECT MB.END2_ID
+    FROM T_BRANCHGROUP bg,
+      MM_BRANCHGROUP_BRANCH mb
+    WHERE bg.id = (select id from t_branchgroup where c_version = '1323')
+    AND BG.ID = MB.END1_ID
+    AND PLOG.C_ISOK = 1
+    )
+  GROUP BY PLOG.C_BRANCHID
+  );
