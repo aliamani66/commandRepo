@@ -223,7 +223,7 @@ echo 15000 65000 > /proc/sys/net/ipv4/ip_local_port_range
 myuser ALL=(ALL) NOPASSWD:ALL for a single user, or
 
 %sudo  ALL=(ALL) NOPASSWD:ALL for a group.
- **********************************************************************************************
+ 
  
 -for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ; ssh $ip 'echo -e "m.lak@1234"|(passwd --stdin m.lak)'; }
 -for ip in $(cat /appserver/crontabjobs/serverip/allip) ; { echo ========$ip====== ;  ssh $ip "sed -i 's/root\/.bash_profile/etc\/profile/g' /etc/init.d/tomcat" ; }
