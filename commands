@@ -1,0 +1,14 @@
+sudo apt-get install oracle-java8-installer
+
+**********************************************************************
+manage javas:
+sudo update-alternatives --config java
+**********************************************************************
+error in docker :
+(HTTP code 500) server error - {"message":"Get https://registry-1.docker.io/v2/: dial tcp: lookup registry-1.docker.io on [::1]:53: read udp [::1]:33405->[::1]:53: read: connection refused"
+
+resolve with chage dns nameserver in:
+vim /etc/resolv.conf 
+
+nameserver 8.8.8.8
+
